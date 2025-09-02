@@ -1,0 +1,26 @@
+User-agent: *
+
+# ❌ Block only useless query parameters
+Disallow: /*?add_to_wishlist=
+Disallow: /*?remove_item=
+Disallow: /*?display_mode=
+Disallow: /*?shopvar=
+Disallow: /*?shopvar0=
+Disallow: /*?post_type=product&product_order=
+
+# ❌ Block internal search results (thin/duplicate pages)
+Disallow: /?s=
+Disallow: /search
+Disallow: /discover
+
+# ❌ Block cart/checkout/my-account (not useful for SEO)
+Disallow: /cart
+Disallow: /checkout
+Disallow: /my-account
+Disallow: /wishlist
+
+# ✅ Allow all product and category pages (important for SEO)
+Allow: /
+
+# --- Sitemap section (keep all your sitemaps) ---
+Sitemap: https://ponnobd.com/sitemap.xml

@@ -1,0 +1,90 @@
+[02-Sep-2025 05:31:35 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:31:35 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:31:58 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:31:58 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:31:59 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:31:59 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:32:01 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/artisan on line 18
+[02-Sep-2025 05:32:01 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/artisan:18
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/artisan on line 18
+[02-Sep-2025 05:32:17 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:32:17 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:32:46 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:32:46 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:32:55 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:32:55 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:32:56 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:32:56 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:33:01 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/artisan on line 18
+[02-Sep-2025 05:33:01 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/artisan:18
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/artisan on line 18
+[02-Sep-2025 05:33:35 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:33:35 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:33:36 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:33:36 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:33:49 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:33:49 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:33:49 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:33:49 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:33:53 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:33:53 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:33:54 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:33:54 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:34:01 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/artisan on line 18
+[02-Sep-2025 05:34:01 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/artisan:18
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/artisan on line 18
+[02-Sep-2025 05:38:34 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:38:34 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:38:48 UTC] PHP Warning:  require(/home/pentanik/ponnobd.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/pentanik/ponnobd.com/index.php on line 34
+[02-Sep-2025 05:38:48 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/pentanik/ponnobd.com/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/pentanik/ponnobd.com/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/pentanik/ponnobd.com/index.php on line 34
