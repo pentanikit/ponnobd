@@ -46,6 +46,7 @@
     42 => 'App\\Providers\\EventServiceProvider',
     43 => 'App\\Providers\\RouteServiceProvider',
     44 => 'App\\Providers\\EmailServiceProvider',
+    45 => 'App\\Providers\\SchemaServiceProvider',
   ),
   'eager' => 
   array (
@@ -79,6 +80,7 @@
     27 => 'App\\Providers\\EventServiceProvider',
     28 => 'App\\Providers\\RouteServiceProvider',
     29 => 'App\\Providers\\EmailServiceProvider',
+    30 => 'App\\Providers\\SchemaServiceProvider',
   ),
   'deferred' => 
   array (
