@@ -41,7 +41,7 @@
   <meta property="og:site_name" content="{{ config('app.name') }}" />
 
   @yield('meta')
- 
+ @stack('schema')
 
   {{-- CSS --}}
   <link rel="stylesheet" href="{{ asset('frontend/v2/css/line-awesome.min.css') }}">
