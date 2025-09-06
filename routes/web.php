@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Route;
 use Spatie\ResponseCache\Middlewares\CacheResponse;
+use App\Http\Controllers\Backend\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -71,7 +72,8 @@ Auth::routes();
 Route::get('/{slug}', ProductOrCategory::class)->name('product.details');
 
 
-
+Route::post('/{product}/reviews', [ProductController::class, 'postReview'])
+    ->name('reviews.store');
 
 Route::get("nullable",function(){
 

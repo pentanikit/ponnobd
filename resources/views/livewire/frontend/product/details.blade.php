@@ -12,6 +12,8 @@
 <meta name="twitter:image" content="{{ uploadedFile($product->thumbnail_img) }}" />
 @endsection
 
+
+
 <div>
   <section class="product-details bg--white py-50">
     <div class="container">
@@ -215,28 +217,46 @@
                         </div>
                       </div>
 
-                      <div class="reviews-list">
-                        @php
-                          $uniqueReviews = $product->reviews
-                            ->sortByDesc('created_at')   // latest first
-                            ->unique('user_id')          // one review per user
-                            ->values()
-                            ->take(2);
-                        @endphp
+                     @php
+                    // Full unique list (latest first)
+                    $uniqueAll = $product->reviews
+                        ->sortByDesc('created_at')
+                        ->unique('user_id')      // one per user
+                        ->values();
 
-                        @foreach ($uniqueReviews as $review)
-                          <div class="review-item">
-                            <div class="review-header">
-                              <span class="reviewer-name">{{ optional($review->user)->name ?? ($review->guest_name ?? 'Anonymous') }}</span>
-                              <span class="review-date">{{ $review->created_at->format('M d, Y') }}</span>
-                            </div>
-                            <div class="review-rating" aria-label="{{ (int) $review->rating }} out of 5">
-                              {!! str_repeat('★', (int) $review->rating) . str_repeat('☆', 5 - (int) $review->rating) !!}
-                            </div>
-                            <p class="review-content">{{ $review->comment }}</p>
-                          </div>
-                        @endforeach
-                      </div>
+                    $initialCount = 2;           // how many to show collapsed
+                    @endphp
+
+                    <div class="reviews-list" id="reviewsList">
+                    @foreach ($uniqueAll as $i => $review)
+                        <div class="review-item {{ $i >= $initialCount ? 'review-extra hidden' : '' }}">
+                        <div class="review-header">
+                            <span class="reviewer-name">{{ optional($review->user)->name ?? ($review->guest_name ?? 'Anonymous') }}</span>
+                            <span class="review-date">{{ $review->created_at->format('M d, Y') }}</span>
+                        </div>
+                        <div class="review-rating" aria-label="{{ (int) $review->rating }} out of 5">
+                            {!! str_repeat('★', (int) $review->rating) . str_repeat('☆', 5 - (int) $review->rating) !!}
+                        </div>
+                        <p class="review-content">{{ $review->comment }}</p>
+                        </div>
+                    @endforeach
+                    </div>
+
+                    @if ($uniqueAll->count() > $initialCount)
+                    <button type="button"
+                            id="toggleReviewsBtn"
+                            class="add-review-btn"
+                            data-expanded="0">
+                        See all reviews ({{ $uniqueAll->count() }})
+                    </button>
+                    @endif
+
+                    <style>
+                        .hidden{display:none;}
+                        
+                        .show-all-btn:hover{background:#0b5ed7;}
+
+                    </style>
 
                       {{-- Toggle button is NOT a submit --}}
                       <button class="add-review-btn" id="show-form-btn" type="button">Write a Review</button>
@@ -244,62 +264,42 @@
                       <div class="review-form" id="review-form">
                         <h3 class="form-title">Add Your Review</h3>
 
-<form id="reviewForm" onsubmit="return false;">  {{-- kill native submit --}}
-    @csrf
+                    <form id="reviewForm" action="{{ route('reviews.store', $product) }}" method="POST" novalidate>
+                        @csrf
 
-    @guest
-    <div class="form-group">
-        <label class="form-label" for="name">Your Name</label>
-        <input type="text"
-               class="form-input"
-               id="name"
-               wire:model.lazy="guest_name"
-               required
-               onkeydown="if(event.key==='Enter'){event.preventDefault();}">
-        @error('guest_name') <div class="text-red-500 text-sm mt-1">{{ $message }}</div> @enderror
-    </div>
-    @endguest
+                        @guest
+                        <div class="form-group">
+                            <label class="form-label" for="name">Your Name</label>
+                            <input type="text" class="form-input" id="name" name="guest_name" required>
+                        </div>
+                        @endguest
 
-    <div class="form-group">
-        <label class="form-label">Your Rating</label>
-        <div class="rating-input" style="display:flex; gap:.25rem; flex-direction: row-reverse;">
-            <input type="radio" id="star5" value="5" wire:model="rating"><label for="star5">★</label>
-            <input type="radio" id="star4" value="4" wire:model="rating"><label for="star4">★</label>
-            <input type="radio" id="star3" value="3" wire:model="rating"><label for="star3">★</label>
-            <input type="radio" id="star2" value="2" wire:model="rating"><label for="star2">★</label>
-            <input type="radio" id="star1" value="1" wire:model="rating" required><label for="star1">★</label>
-        </div>
-        @error('rating') <div class="text-red-500 text-sm mt-1">{{ $message }}</div> @enderror
-    </div>
+                        <div class="form-group">
+                            <label class="form-label">Your Rating</label>
+                            <div class="rating-input" style="display:flex; gap:.25rem; flex-direction: row-reverse;">
+                                <input type="radio" id="star5" name="rating" value="5"><label for="star5">★</label>
+                                <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
+                                <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
+                                <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
+                                <input type="radio" id="star1" name="rating" value="1" required><label for="star1">★</label>
+                            </div>
+                        </div>
 
-    <div class="form-group">
-        <label class="form-label" for="review">Your Review</label>
-        <textarea class="form-input" id="review"
-                  wire:model.lazy="comment"
-                  required
-                  onkeydown="if(event.key==='Enter'){event.preventDefault();}"></textarea>
-        @error('comment') <div class="text-red-500 text-sm mt-1">{{ $message }}</div> @enderror
-    </div>
+                        <div class="form-group">
+                            <label class="form-label" for="review">Your Review</label>
+                            <textarea class="form-input" id="review" name="comment" required></textarea>
+                        </div>
 
-    <!-- Button-only submit -->
-    <button type="button" class="submit-btn" wire:loading.attr="disabled" wire:click="addReview">
-        <span wire:loading.remove>Submit Review</span>
-        <span wire:loading>Submitting…</span>
-    </button>
-
-    @if (session('review_saved'))
-        <div class="mt-3 text-green-600">{{ session('review_saved') }}</div>
-    @endif
-</form>
-
-<script>
-  // Defensive: block any sneaky submit from other scripts
-  document.addEventListener('DOMContentLoaded', () => {
-    const f = document.getElementById('reviewForm');
-    if (!f) return;
-    f.addEventListener('submit', e => { e.preventDefault(); e.stopPropagation(); return false; }, true);
-  });
-</script>
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            <span class="btn-text">Submit Review</span>
+                            <span class="btn-loading" style="display:none;">Submitting…</span>
+                        </button>
+                    @if (session('review_saved'))
+                        <div id="reviewSuccess" class="mt-3 text-green-600">Thanks for your review</div>
+                    @endif
+                        
+                        <div id="reviewErrors" class="mt-3 text-red-500 space-y-1"></div>
+                    </form>
                       </div>
                     </div>
 
@@ -351,12 +351,36 @@
                         });
                     
 
-                      document.addEventListener('livewire:init', () => {
-                        Livewire.on('review-saved', ({ message }) => {
-                          alert(message || 'Thank you for your review!');
-                        });
-                      });
+
                     </script>
+                    <script>
+                        (function () {
+                            const btn = document.getElementById('toggleReviewsBtn');
+                            if (!btn) return;
+
+                            const extras = () => document.querySelectorAll('.review-extra');
+                            const total  = {{ $uniqueAll->count() }};
+                            const seeAllText = `See all reviews (${total})`;
+                            const showLessText = 'Show less';
+
+                            function setExpanded(expanded) {
+                            extras().forEach(el => el.classList.toggle('hidden', !expanded));
+                            btn.dataset.expanded = expanded ? '1' : '0';
+                            btn.textContent = expanded ? showLessText : seeAllText;
+                            }
+
+                            btn.addEventListener('click', () => {
+                            const expanded = btn.dataset.expanded === '1';
+                            setExpanded(!expanded);
+                            });
+
+                            // Optional: if a review was just added, auto-expand to show it
+                            @if (session('review_saved'))
+                            document.addEventListener('DOMContentLoaded', () => setExpanded(true));
+                            @endif
+                        })();
+                        </script>
+
                   </div>
                 </div> {{-- /#review --}}
               </div>

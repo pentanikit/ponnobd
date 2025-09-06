@@ -738,4 +738,54 @@ class ProductController extends Controller
 
         return 1;
     }
+
+
+public function postReview(Request $request, Product $product)
+    {
+       
+        $rules = [
+            'rating'  => 'required|integer|min:1|max:5',
+            'comment' => 'required|string|min:3|max:5000',
+        ];
+        if (!auth()->check()) {
+            $rules['guest_name'] = 'required|string|min:2|max:120';
+        }
+
+        $validated = $request->validate($rules);
+
+        $review = ProductReview::updateOrCreate(
+            [
+                'product_id' => $product->id,
+                'user_id'    => auth()->id(), // null for guests
+            ],
+            [
+                'guest_name' => auth()->check() ? null : ($validated['guest_name'] ?? null),
+                'rating'     => (int) $validated['rating'],
+                'comment'    => $validated['comment'],
+            ]
+        );
+
+        // (Optional) quick stats
+        $product->loadAvg('reviews as average_rating', 'rating')
+                ->loadCount('reviews as total_reviews');
+
+        $msg = $review->wasRecentlyCreated ? 'Review has been added!' : 'Review has been updated!';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => $msg,
+                'review'  => [
+                    'rating'  => $review->rating,
+                    'comment' => $review->comment,
+                    'guest'   => $review->guest_name,
+                ],
+                'stats' => [
+                    'average' => round($product->average_rating ?? 0, 1),
+                    'total'   => (int) ($product->total_reviews ?? 0),
+                ],
+            ]);
+        }
+
+        return back()->with('review_saved', $msg);
+    }
 }

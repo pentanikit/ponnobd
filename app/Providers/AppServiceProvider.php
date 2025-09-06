@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\App;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,11 +24,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Paginator::useBootstrapFive();
+    // Only force HTTPS in production
+    if (App::environment('production')) {
         URL::forceScheme('https');
-
-        Gate::define('viewPulse', function (User $user) {
-            return $user->user_type == 'admin';
-        });
+    } else {
+        // Optional: make sure local uses http
+        URL::forceScheme('http');
+    }
     }
 }
