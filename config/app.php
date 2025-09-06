@@ -172,6 +172,7 @@ return [
         App\Providers\EmailServiceProvider::class,
         App\Providers\SchemaServiceProvider::class,
        
+       
     ])->toArray(),
 
     /*

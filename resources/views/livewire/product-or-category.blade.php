@@ -5,3 +5,4 @@
     <livewire:frontend.category :slug="$slug">
     @endif
 </div>
+

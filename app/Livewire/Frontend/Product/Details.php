@@ -21,6 +21,9 @@ class Details extends Component
     public $totalPrice = 0;
     public $related_products;
     public $variationImg = null;
+    public $guest_name = '';
+
+
 
     public function mount($slug)
     {
@@ -254,40 +257,61 @@ class Details extends Component
                 ->first();
 
             $this->totalPrice   = (float) ($variation->price ?? 0);
-            $this->variationImg = $variation->image ?? null;
+            $this->variationImg = $variation->image ?? null; 
             return;
         }
 
         $this->totalPrice = (float) $this->product->discountPrice(false);
     }
 
-    public function addReview()
-    {
-        $this->validate([
-            'rating'  => 'required|integer|min:1|max:5',
-            'comment' => 'required|string',
-        ]);
+    // public function addReview()
+    // {
+    //     $this->validate([
+    //         'rating'  => 'required|integer|min:1|max:5',
+    //         'comment' => 'required|string',
+    //     ]);
 
-        $review             = new ProductReview();
-        $review->product_id = $this->product->id;
-        $review->user_id    = auth()->id();
-        $review->comment    = $this->comment;
-        $review->rating     = (int) $this->rating;
-        $review->save();
+    //     $review             = new ProductReview();
+    //     $review->product_id = $this->product->id;
+    //     $review->user_id    = auth()->id() ?? null;
+    //     $review->guest_name = $this->guest_name;
+    //     $review->comment    = $this->comment;  
+    //     $review->rating     = (int) $this->rating;
+    //     $review->save();
 
-        $this->reset(['rating','comment']);
+    //     $this->reset(['rating','comment']);
 
-        $this->dispatch('alert', [
-            'type'    => 'success',
-            'message' => 'Review has been added!',
-        ]);
+    //     $this->dispatch('alert', [
+    //         'type'    => 'success',
+    //         'message' => 'Review has been added!',
+    //     ]);
 
-        // review_submitted (named args)
-        $this->dispatch('review-submitted',
-            product_id: (string) $this->product->id,
-            rating:     (int) $review->rating
-        );
-    }
+    //     // review_submitted (named args)
+    //     $this->dispatch('save-session', key: 'review_saved', value: 'Review has been added!');
+       
+    // }
+
+public function addReview()
+{
+    $this->validate([
+        'rating'      => 'required|integer|min:1|max:5',
+        'comment'     => 'required|string',
+        'guest_name'  => auth()->check() ? 'nullable' : 'required|string|max:100',
+    ]);
+
+    $review = new ProductReview();
+    $review->product_id = $this->product->id;
+    $review->user_id    = auth()->id();
+    $review->guest_name = auth()->check() ? null : $this->guest_name;
+    $review->comment    = $this->comment;
+    $review->rating     = (int) $this->rating;
+    $review->save();
+
+    $this->reset(['guest_name','rating','comment']);
+
+    session()->flash('review_saved', 'Review has been added!');
+    $this->dispatch('review-saved', message: 'Review has been added!');
+}
 
     public function render()
     {

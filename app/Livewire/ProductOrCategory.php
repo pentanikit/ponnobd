@@ -23,12 +23,22 @@ class ProductOrCategory extends Component
     {
         $this->slug = $slug;
         $this->product = Product::with('categories.category', 'stocks', 'reviews.user')->where('slug', $slug)->publish()->first();
+       
 
         if($this->product == null ){
             $this->type = 'category';
             $this->category = Category::whereSlug($slug)->firstOrFail();
         }
     }
+
+
+
+    
+
+
+
+
+
     public function render()
     {
         $title = $this->type == 'product' ? $this->product?->meta_title : $this->category?->meta_title;
