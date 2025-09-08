@@ -10,6 +10,99 @@
 <meta name="twitter:title" content="{{ $product->name }} | {{ config('app.name') }}" />
 <meta name="twitter:description" content="{{ strip_tags($product->meta_description) }}" />
 <meta name="twitter:image" content="{{ uploadedFile($product->thumbnail_img) }}" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "{{ url('/') }}#website",
+      "url": "{{ url('/') }}",
+      "name": "{{ config('app.name') }}",
+      "inLanguage": "bn",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "{{ url('/') }}/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "WebPage",
+      "@id": "{{ url()->current() }}#webpage",
+      "url": "{{ url()->current() }}",
+      "name": "{{ $product->name }} | {{ config('app.name') }}",
+      "isPartOf": { "@id": "{{ url('/') }}#website" },
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "url": "{{ uploadedFile($product->thumbnail_img) }}"
+      },
+      "description": "{{ e(strip_tags($product->meta_description)) }}",
+      "breadcrumb": { "@id": "{{ url()->current() }}#breadcrumb" },
+      "datePublished": "{{ optional($product->created_at)->toIso8601String() }}",
+      "dateModified": "{{ optional($product->updated_at)->toIso8601String() }}"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "{{ url()->current() }}#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "{{ url('/') }}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Product",
+          "item": "{{ url()->current() }}"
+        }
+      ]
+    },
+    {
+      "@type": "Product",
+      "@id": "{{ url()->current() }}#product",
+      "name": "{{ $product->name }}",
+      "url": "{{ url()->current() }}",
+      "description": "{{ e(strip_tags($product->meta_description)) }}",
+      "sku": "{{ $product->sku ?? ($product->code ?? $product->id) }}",
+      "image": [
+        "{{ uploadedFile($product->thumbnail_img) }}"
+        @php $photos = json_decode($product->photos) ?? []; @endphp
+        @foreach ($photos as $idx => $photo)
+        ,"{{ uploadedFile($photo->id) }}"
+        @endforeach
+      ],
+      "brand": {
+        "@type": "Brand",
+        "name": "{{ $product->brand->name ?? config('app.name') }}"
+      },
+      "category": "{{ optional(optional($product->categories->first())->category)->name ?? 'Product' }}",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "{{ number_format((float) $product->reviews->avg('rating'), 1, '.', '') }}",
+        "reviewCount": "{{ (int) $product->reviews->count() }}"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": "{{ url()->current() }}",
+        "priceCurrency": "BDT",
+        "price": "{{ number_format((float) $product->discountPrice(false), 2, '.', '') }}",
+        "availability": "{{ (($product->variant_product ? $product->stocks->sum('qty') : $product->current_stock) > 0) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' }}",
+        "itemCondition": "https://schema.org/NewCondition",
+        "seller": {
+          "@type": "Organization",
+          "name": "{{ config('app.name') }}",
+          "telephone": "{{ settings('header_phone') }}"
+        },
+        "priceValidUntil": "{{ \Carbon\Carbon::now()->addMonths(1)->toDateString() }}"
+      }
+    }
+  ]
+}
+</script>
+
 @endsection
 
 

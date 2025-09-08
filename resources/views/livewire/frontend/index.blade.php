@@ -114,6 +114,169 @@
     @endforeach
     <!-- Categories product section -->
 
+
+    @php
+    $siteUrl    = url('/');
+    $currentUrl = url()->current();
+    $siteName   = config('app.name');
+    $metaTitle  = settings('site_meta_title') ?: $siteName;
+    $metaDesc   = strip_tags(settings('site_meta_description'));
+    $metaImage  = uploadedFile(settings('site_meta_image'));
+    $phone      = settings('header_phone') ?? null;
+
+    // Home page categories (titles, links, icons)
+    $catTitles = is_array(json_decode(settings('cat_title'))) ? json_decode(settings('cat_title')) : [];
+    $catLinks  = @json_decode(settings('cat_link')) ?: [];
+    $catIcons  = @json_decode(settings('cat_icon')) ?: [];
+
+    // Hero gallery images
+    $galleries = is_array(json_decode(settings('home_galleries_image'))) ? json_decode(settings('home_galleries_image')) : [];
+
+    $graph = [];
+
+    // WebSite
+    $graph[] = [
+        '@type'  => 'WebSite',
+        '@id'    => "{$siteUrl}#website",
+        'url'    => $siteUrl,
+        'name'   => $siteName,
+        'inLanguage' => 'bn-BD',
+        'potentialAction' => [
+            '@type' => 'SearchAction',
+            'target' => "{$siteUrl}/search?q={search_term_string}",
+            'query-input' => 'required name=search_term_string',
+        ],
+    ];
+
+    // Organization
+    $org = [
+        '@type' => 'Organization',
+        '@id'   => "{$siteUrl}#organization",
+        'name'  => $siteName,
+        'url'   => $siteUrl,
+        'logo'  => [
+            '@type' => 'ImageObject',
+            'url'   => $metaImage,
+        ],
+    ];
+    if (!empty($phone)) {
+        $org['contactPoint'] = [[
+            '@type'         => 'ContactPoint',
+            'contactType'   => 'customer support',
+            'telephone'     => $phone,
+            'areaServed'    => 'BD',
+            'availableLanguage' => ['bn', 'en'],
+        ]];
+    }
+    $graph[] = $org;
+
+    // Home WebPage
+    $graph[] = [
+        '@type'  => 'WebPage',
+        '@id'    => "{$currentUrl}#webpage",
+        'url'    => $currentUrl,
+        'name'   => $metaTitle,
+        'isPartOf' => ['@id' => "{$siteUrl}#website"],
+        'primaryImageOfPage' => [
+            '@type' => 'ImageObject',
+            'url'   => $metaImage,
+        ],
+        'description' => $metaDesc,
+        'about' => array_values(array_map(fn($t) => ['@type' => 'Thing', 'name' => $t], $catTitles)),
+    ];
+
+    // SiteNavigationElement (top category tiles)
+    if (!empty($catTitles)) {
+        $navItems = [];
+        foreach ($catTitles as $i => $title) {
+            $navItems[] = [
+                '@type'    => 'ListItem',
+                'position' => $i + 1,
+                'name'     => $title,
+                'item'     => $catLinks[$i] ?? $siteUrl,
+                'image'    => isset($catIcons[$i]) ? uploadedFile($catIcons[$i]) : null,
+            ];
+        }
+        // Remove null image keys
+        foreach ($navItems as &$it) { if ($it['image'] === null) unset($it['image']); }
+
+        $graph[] = [
+            '@type'           => 'SiteNavigationElement',
+            '@id'             => "{$currentUrl}#site-navigation",
+            'name'            => 'Top categories',
+            'url'             => $currentUrl,
+            'itemListElement' => $navItems,
+        ];
+    }
+
+    // Hero image gallery
+    if (!empty($galleries)) {
+        $galleryMedia = [];
+        foreach ($galleries as $imgId) {
+            $galleryMedia[] = [
+                '@type' => 'ImageObject',
+                'url'   => uploadedFile($imgId),
+            ];
+        }
+        $graph[] = [
+            '@type'            => 'ImageGallery',
+            '@id'              => "{$currentUrl}#hero-gallery",
+            'name'             => 'Home hero gallery',
+            'associatedMedia'  => $galleryMedia,
+        ];
+    }
+
+    // Product ItemLists for the visible homepage sections (top 12 per section)
+    if (!empty($this->sections)) {
+        foreach ($this->sections as $section) {
+            $products = Cache::rememberForever('products-section-'.$section->id, function () use ($section) {
+                return App\Models\Product::whereIn('id', $section->products->pluck('product_id'))
+                    ->publish()
+                    ->orderByPrice()
+                    ->get();
+            });
+
+            if ($products->isEmpty()) continue;
+
+            $items = [];
+            foreach ($products->take(12) as $idx => $product) {
+                $productUrl = url('/product/' . ($product->slug ?? $product->id));
+                $items[] = [
+                    '@type'    => 'ListItem',
+                    'position' => $idx + 1,
+                    'item'     => [
+                        '@type'  => 'Product',
+                        '@id'    => "{$productUrl}#product",
+                        'url'    => $productUrl,
+                        'name'   => $product->name,
+                        'image'  => [ uploadedFile($product->thumbnail_img) ],
+                        // Keep homepage Product minimal; full Offer/AggregateRating belongs on the product detail page.
+                    ],
+                ];
+            }
+
+            $graph[] = [
+                '@type'           => 'ItemList',
+                '@id'             => "{$currentUrl}#section-{$section->id}",
+                'name'            => $section->name,
+                'numberOfItems'   => count($items),
+                'itemListOrder'   => 'http://schema.org/ItemListOrderAscending',
+                'itemListElement' => $items,
+            ];
+        }
+    }
+
+    $jsonLd = [
+        '@context' => 'https://schema.org',
+        '@graph'   => $graph,
+    ];
+@endphp
+
+<script type="application/ld+json">
+{!! json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+</script>
+
+
     <!-- footer top section -->
     <section class="footertop">
         <div class="container">
