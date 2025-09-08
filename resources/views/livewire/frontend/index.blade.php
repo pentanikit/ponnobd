@@ -92,6 +92,7 @@
                     </div>
                 </div>
             </div>
+            
             <div class="row gy-4 justify-content-center">
                 @php
                 $products = Cache::rememberForever('products-section-'.$section->id, function () use($section){

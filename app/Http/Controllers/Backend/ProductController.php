@@ -741,51 +741,75 @@ class ProductController extends Controller
 
 
 public function postReview(Request $request, Product $product)
-    {
-       
-        $rules = [
-            'rating'  => 'required|integer|min:1|max:5',
-            'comment' => 'required|string|min:3|max:5000',
-        ];
-        if (!auth()->check()) {
-            $rules['guest_name'] = 'required|string|min:2|max:120';
-        }
+{
+    // --- Validation rules ---
+    $rules = [
+        'rating'  => 'required|integer|min:1|max:5',
+        'comment' => 'required|string|min:3|max:5000',
+    ];
 
-        $validated = $request->validate($rules);
-
-        $review = ProductReview::updateOrCreate(
-            [
-                'product_id' => $product->id,
-                'user_id'    => auth()->id(), // null for guests
-            ],
-            [
-                'guest_name' => auth()->check() ? null : ($validated['guest_name'] ?? null),
-                'rating'     => (int) $validated['rating'],
-                'comment'    => $validated['comment'],
-            ]
-        );
-
-        // (Optional) quick stats
-        $product->loadAvg('reviews as average_rating', 'rating')
-                ->loadCount('reviews as total_reviews');
-
-        $msg = $review->wasRecentlyCreated ? 'Review has been added!' : 'Review has been updated!';
-
-        if ($request->expectsJson()) {
-            return response()->json([
-                'message' => $msg,
-                'review'  => [
-                    'rating'  => $review->rating,
-                    'comment' => $review->comment,
-                    'guest'   => $review->guest_name,
-                ],
-                'stats' => [
-                    'average' => round($product->average_rating ?? 0, 1),
-                    'total'   => (int) ($product->total_reviews ?? 0),
-                ],
-            ]);
-        }
-
-        return back()->with('review_saved', $msg);
+    if (!auth()->check()) {
+        $rules['guest_name'] = 'required|string|min:2|max:120';
     }
+
+    $validated = $request->validate($rules);
+
+    // --- Determine identifiers ---
+    if (auth()->check()) {
+        // Logged-in user
+        $user       = auth()->user();
+        $identifier = [
+            'product_id' => $product->id,
+            'user_id'    => $user->id,
+        ];
+        $guestName = $user->name; // dynamically fetch from DB
+    } else {
+        // Guest user
+        $guestName  = $validated['guest_name'];
+        $identifier = [
+            'product_id' => $product->id,
+            'user_id'    => null,
+            'guest_name' => $guestName,
+        ];
+    }
+
+    // --- Create or Update ---
+    $review = ProductReview::updateOrCreate(
+        $identifier,
+        [
+            'guest_name' => $guestName,
+            'rating'     => (int) $validated['rating'],
+            'comment'    => $validated['comment'],
+        ]
+    );
+
+    // --- Quick stats ---
+    $product->loadAvg('reviews as average_rating', 'rating')
+            ->loadCount('reviews as total_reviews');
+
+    $msg = $review->wasRecentlyCreated ? 'Review has been added!' : 'Review has been updated!';
+
+    // --- Response ---
+    if ($request->expectsJson()) {
+        return response()->json([
+            'status' => 200,
+            'message' => $msg,
+            'review'  => [
+                'rating'  => $review->rating,
+                'comment' => $review->comment,
+                'guest'   => $review->guest_name,
+            ],
+            'stats' => [
+                'average' => round($product->average_rating ?? 0, 1),
+                'total'   => (int) ($product->total_reviews ?? 0),
+            ],
+        ]);
+    }
+     session()->flash('success', 'Review has been added');
+     return redirect()->to(url()->previous());
+    
+}
+
+
+
 }

@@ -128,7 +128,7 @@
       <div class="row gy-5">
         <div class="col-lg-12">
           <div class="ticket--description radius--8 card--bg">
-            <div class="tab-pane fade active show" id="buy" role="tabpanel" aria-labelledby="buy-tab">
+            <div class="tab-pane fade show" id="buy" role="tabpanel" aria-labelledby="buy-tab">
               <ul class="nav nav-tabs custom--tabs mb-2" role="tablist">
                 <li class="nav-item" role="presentation">
                   <button class="nav-link active" id="Win-tab" data-bs-toggle="tab"
@@ -206,7 +206,7 @@
                   <div class="details-wrap mb-4">
                     <div class="reviews-container">
                       <h2 class="section-title">Customer Reviews</h2>
-
+                
                       <div class="rating-summary">
                         <div class="average-rating">
                           {{ number_format($product->reviews->avg('rating')) }}
@@ -221,13 +221,14 @@
                     // Full unique list (latest first)
                     $uniqueAll = $product->reviews
                         ->sortByDesc('created_at')
-                        ->unique('user_id')      // one per user
+                              
                         ->values();
 
                     $initialCount = 2;           // how many to show collapsed
                     @endphp
 
                     <div class="reviews-list" id="reviewsList">
+                       
                     @foreach ($uniqueAll as $i => $review)
                         <div class="review-item {{ $i >= $initialCount ? 'review-extra hidden' : '' }}">
                         <div class="review-header">
@@ -264,8 +265,8 @@
                       <div class="review-form" id="review-form">
                         <h3 class="form-title">Add Your Review</h3>
 
-                    <form id="reviewForm" action="{{ route('reviews.store', $product) }}" method="POST" novalidate>
-                        @csrf
+                    <form id="reviewForm"  action="{{ route('reviews.store', $product) }}" method="POST" novalidate>
+                       @csrf
 
                         @guest
                         <div class="form-group">
@@ -294,11 +295,11 @@
                             <span class="btn-text">Submit Review</span>
                             <span class="btn-loading" style="display:none;">Submitting…</span>
                         </button>
-                    @if (session('review_saved'))
-                        <div id="reviewSuccess" class="mt-3 text-green-600">Thanks for your review</div>
-                    @endif
+                    
+                       
+                    
                         
-                        <div id="reviewErrors" class="mt-3 text-red-500 space-y-1"></div>
+                    
                     </form>
                       </div>
                     </div>
@@ -339,6 +340,15 @@
                       }
                     </style>
 
+                      <script>
+                        @if (session('success'))
+                            toastr.success("{{ session('success') }}");
+                        @endif
+
+                        @if (session('error'))
+                            toastr.error("{{ session('error') }}");
+                        @endif
+                    </script>
                     <script>
                      
                         const showFormBtn = document.getElementById('show-form-btn');
@@ -374,12 +384,110 @@
                             setExpanded(!expanded);
                             });
 
-                            // Optional: if a review was just added, auto-expand to show it
-                            @if (session('review_saved'))
-                            document.addEventListener('DOMContentLoaded', () => setExpanded(true));
-                            @endif
+                        
                         })();
-                        </script>
+                    </script>
+
+                    <!-- <script>
+                          document.addEventListener("DOMContentLoaded", function () {
+                              const form = document.getElementById("reviewForm");
+                              const submitBtn = document.getElementById("submitBtn");
+                              const btnText = submitBtn.querySelector(".btn-text");
+                              const btnLoading = submitBtn.querySelector(".btn-loading");
+                              const reviewSuccess = document.getElementById("reviewSuccess");
+                              const reviewErrors = document.getElementById("reviewErrors");
+                            
+                              // Hide success initially
+                             
+                      
+
+                              form.addEventListener("submit", async function (e) {
+                                  e.preventDefault();
+
+                               
+
+                                  // Loading state
+                                  btnText.style.display = "none";
+                                  btnLoading.style.display = "inline";
+
+                                  try {
+                                      const response = await fetch("{{ route('reviews.store', $product->id) }}", {
+                                          method: "POST",
+                                          headers: {
+                                              "X-CSRF-TOKEN": document.querySelector('input[name="_token"]').value,
+                                              "Accept": "application/json",
+                                          },
+                                          body: new FormData(form),
+                                      });
+
+                                      if (response.ok) {
+                                        const thanknote = document.getElementById("thankyounote");
+                                          const data = await response.json();
+
+                                          // Success toast
+                                       
+                                         
+                                          thanknote.style.display = "block";
+                                          // Reset form
+                                          form.reset();
+
+                                          // Append new review to list
+                                          const reviewsList = document.getElementById("reviewsList");
+                                          if (reviewsList) {
+
+                                              const item = document.createElement("div");
+                                              item.classList.add("review-item");
+
+                                              let stars = "";
+                                              for (let i = 1; i <= 5; i++) {
+                                                  stars += i <= data.review.rating 
+                                                      ? "<span class='text-yellow-500'>★</span>" 
+                                                      : "<span class='text-gray-400'>★</span>";
+                                              }
+
+
+                                              item.innerHTML = `
+                                                  <div class="review-header">
+                                                      <span class="reviewer-name">${data.review.guest ?? 'Anonymous'}</span>
+                                                      <span class="review-date">${Date.now()}</span>
+                                                  </div>
+                                                  <div class="review-rating" aria-label="{{ (int) $review->rating }} out of 5">
+                                                      ${stars}
+                                                  </div>
+                                                  <p class="review-content">${data.review.comment}</p>
+                                              `;
+                                              reviewsList.prepend(item); // newest review on top
+                                          }
+
+                                          // Optional: trigger a toast library
+                                          if (window.toastr) {
+                                              toastr.success(data.message);
+                                          }
+                                      }
+                                      else {
+                                          const errorData = await response.json();
+                                          if (errorData.errors) {
+                                              Object.values(errorData.errors).forEach(errArr => {
+                                                  errArr.forEach(msg => {
+                                                      const div = document.createElement("div");
+                                                      div.innerText = msg;
+                                                      reviewErrors.appendChild(div);
+                                                  });
+                                              });
+                                          }
+                                      }
+                                  } catch (error) {
+                                      console.error("Review submission failed:", error);
+                                      
+                                  } finally {
+                                      // Reset button
+                                      btnText.style.display = "inline";
+                                      btnLoading.style.display = "none";
+                                  }
+                              });
+                          });
+                      </script> -->
+
 
                   </div>
                 </div> {{-- /#review --}}

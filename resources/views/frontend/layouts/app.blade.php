@@ -52,6 +52,15 @@
   <link rel="stylesheet" href="{{ asset('frontend/v2/css/splitting.css') }}">
   <link rel="stylesheet" href="{{ asset('frontend/v2/css/magiczoom.css') }}">
   <link rel="stylesheet" href="{{ asset('frontend/v2/css/main.css?v=3.7') }}">
+  <!-- Toastr CSS -->
+<link rel="preconnect"  href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+<!-- jQuery (required for toastr) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Toastr JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
