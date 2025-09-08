@@ -323,5 +323,14 @@
   <script src="{{ asset('frontend/v2/js/splitting.min.js') }}"></script>
   <script src="{{ asset('frontend/v2/js/magiczoom.js') }}"></script>
   <script src="{{ asset('frontend/v2/js/main.js?v=1.4') }}"></script>
+  <script>
+    @if (session('success'))
+        toastr.success("{{ session('success') }}");
+    @endif
+
+    @if (session('error'))
+        toastr.error("{{ session('error') }}");
+    @endif
+</script>
 </body>
 </html>

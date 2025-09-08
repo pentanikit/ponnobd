@@ -340,15 +340,7 @@
                       }
                     </style>
 
-                      <script>
-                        @if (session('success'))
-                            toastr.success("{{ session('success') }}");
-                        @endif
-
-                        @if (session('error'))
-                            toastr.error("{{ session('error') }}");
-                        @endif
-                    </script>
+ 
                     <script>
                      
                         const showFormBtn = document.getElementById('show-form-btn');
