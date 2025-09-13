@@ -69,10 +69,14 @@ Orders
     const orderId = {{ $order->id }};
 
     // Small UX: disable → request → enable
-    function withSaving($el, promise){
-        $el.prop('disabled', true).addClass('opacity-75');
-        return promise.finally(()=> $el.prop('disabled', false).removeClass('opacity-75'));
-    }
+// REPLACE your current withSaving with this:
+function withSaving($el, jqXHR){
+    $el.prop('disabled', true).addClass('opacity-75');
+    return jqXHR.always(function(){
+        $el.prop('disabled', false).removeClass('opacity-75');
+    });
+}
+
 
     // Delivery status change
     $(document).on('change', '#update_delivery_status', function(){
