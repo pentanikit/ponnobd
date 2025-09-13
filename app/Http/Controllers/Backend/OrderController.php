@@ -36,11 +36,12 @@ class OrderController extends Controller
         $order->status = $request->status;
         $order->save();
 
-        foreach ($order->detail as $key => $orderDetail) {
+        // foreach ($order->detail as $key => $orderDetail) {
 
-            $orderDetail->status = $request->status;
-            $orderDetail->save();
-        }
+          
+        // }
+        // $order->status = $request->status;
+        // $order->save();
 
         session()->flash('success', 'Payment status has been updated!');
         session()->flash('success', 'Delivery status has been updated!');
@@ -61,10 +62,10 @@ class OrderController extends Controller
 
         $order->save();
 
-        foreach ($order->detail as $orderDetail) {
-            $orderDetail->payment_status = $request->status;
-            $orderDetail->save();
-        }
+        // foreach ($order->detail as $orderDetail) {
+        //     $orderDetail->payment_status = $request->status;
+        //     $orderDetail->save();
+        // }
 
        // Example in your controller methods:
     return response()->json([

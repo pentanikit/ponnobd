@@ -9,6 +9,8 @@ class Order extends Model
 {
     use HasFactory;
 
+    
+
     // ✅ correct relation type
     public function user()
     {
