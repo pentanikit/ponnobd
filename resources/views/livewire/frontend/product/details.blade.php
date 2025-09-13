@@ -576,7 +576,7 @@
                                   alert.className = `alert alert-${type} my-2`;
                                   alert.setAttribute('role', 'alert');
                                   alert.textContent = message;
-                                  reviewsList.prepend(alert);
+                                  reviewsList.append(alert);
                                   setTimeout(() => alert.remove(), 5000);
                                 }
 
@@ -620,7 +620,7 @@
                                               is_extra: false
                                             };
 
-                                      insertAlert(data?.message || '✅ Thank you! Your review has been submitted.', 'success', {
+                                      insertAlert('✅ Thank you! Your review has been submitted.', 'success', {
                                         html: data?.html, // preferred if your API sends rendered HTML
                                         ...reviewPayload
                                       });
