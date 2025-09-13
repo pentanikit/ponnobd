@@ -45,7 +45,12 @@ class OrderController extends Controller
         session()->flash('success', 'Payment status has been updated!');
         session()->flash('success', 'Delivery status has been updated!');
 
-        return 1;
+        // Example in your controller methods:
+        return response()->json([
+            'ok' => true,
+            'message' => 'status updated to ' . ucwords(str_replace('_',' ', $request->status)),
+        ]);
+
     }
 
     public function updatePaymentStatus(Request $request)
@@ -61,7 +66,12 @@ class OrderController extends Controller
             $orderDetail->save();
         }
 
-        return 1;
+       // Example in your controller methods:
+    return response()->json([
+        'ok' => true,
+        'message' => 'Delivery status updated to ' . ucwords(str_replace('_',' ', $request->status)),
+    ]);
+
     }
 
     public function destroy($id)
