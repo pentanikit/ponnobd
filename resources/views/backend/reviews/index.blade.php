@@ -100,7 +100,7 @@
             </div>
             <div class="d-flex gap-2">
                 <button type="button" id="clearSelection" class="btn btn-outline-secondary btn-sm" disabled>Clear</button>
-                <button type="submit" id="bulkDeleteBtn" class="btn btn-danger btn-sm" disabled
+                <button type="submit" id="bulkDeleteBtn" class="btn btn-danger btn-sm"
                         onclick="return confirm('Delete selected reviews?');">
                     Delete Selected
                 </button>
