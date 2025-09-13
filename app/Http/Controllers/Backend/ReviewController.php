@@ -125,6 +125,20 @@ class ReviewController extends Controller
             : back()->with('success', 'Review deleted.');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $ids = array_filter((array) $request->input('ids', []), fn($v) => is_numeric($v));
+        if (empty($ids)) {
+            return back()->with('warning', 'No reviews selected.');
+        }
+
+        // Optional: authorize user here (e.g., Gate::authorize('reviews_delete'))
+        \App\Models\ProductReview::whereIn('id', $ids)->delete();
+
+        return back()->with('success', 'Selected reviews deleted.');
+    }
+
+
     /**
      * GET /products/{product}/reviews/summary
      * Aggregates visible reviews (status filter, default 1).
