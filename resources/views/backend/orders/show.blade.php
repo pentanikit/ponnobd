@@ -6,80 +6,57 @@ Orders
 @push('js')
 <script>
 (function(){
-    // Helpers
+    // --- helper: title-case for UI text ---
     function toTitleCase(str){
         return (str || '').replace(/_/g,' ').replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.slice(1));
     }
 
-    function showMessage(message, type){ // type: success | danger | warning | info
-        const container = document.getElementById('toastContainer');
+    // --- notifier: prefer toastr, fallback to Bootstrap toast container (#toastContainer) ---
+    function notifySuccess(msg){
+        if (window.toastr) { toastr.clear(); toastr.success(msg); }
+        else { showBootstrapToast(msg, 'success'); }
+    }
+    function notifyError(msg){
+        if (window.toastr) { toastr.clear(); toastr.error(msg); }
+        else { showBootstrapToast(msg, 'danger'); }
+    }
+    function showBootstrapToast(message, type){ // success | danger | warning | info
+        const container = document.getElementById('toastContainer') || document.body;
         const isBootstrap = window.bootstrap && bootstrap.Toast;
-
         if (isBootstrap) {
-            // Build a Bootstrap 5 toast
-            const toastEl = document.createElement('div');
-            toastEl.className = `toast align-items-center text-bg-${type} border-0`;
-            toastEl.setAttribute('role','alert');
-            toastEl.setAttribute('aria-live','assertive');
-            toastEl.setAttribute('aria-atomic','true');
-            toastEl.innerHTML = `
-                <div class="d-flex">
-                    <div class="toast-body">${message}</div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>`;
-            container.appendChild(toastEl);
-            const t = new bootstrap.Toast(toastEl, { delay: 2000 });
+            const el = document.createElement('div');
+            el.className = `toast align-items-center text-bg-${type} border-0`;
+            el.setAttribute('role','alert'); el.setAttribute('aria-live','assertive'); el.setAttribute('aria-atomic','true');
+            el.innerHTML = `<div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>`;
+            container.appendChild(el);
+            const t = new bootstrap.Toast(el, { delay: 2200 });
             t.show();
-            // auto-remove after hidden
-            toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+            el.addEventListener('hidden.bs.toast', () => el.remove());
         } else {
-            // Fallback: Bootstrap-style alert
             const alert = document.createElement('div');
             alert.className = `alert alert-${type} alert-dismissible fade show shadow`;
-            alert.innerHTML = `
-                <strong>${type === 'success' ? 'Success' : 'Notice'}:</strong> ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
+            alert.innerHTML = `<strong>${type === 'success' ? 'Success' : 'Notice'}:</strong> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
             container.appendChild(alert);
             setTimeout(()=> alert.remove(), 2500);
         }
     }
 
-    function parseOkAndMessage(resp, defaultOkMsg='Updated successfully', defaultErrMsg='Update failed'){
-        // Accept JSON or plain text responses (e.g., "1", "ok", "success", or custom)
-        try {
-            if (typeof resp === 'string') {
-                const s = resp.trim().toLowerCase();
-                if (s === '1' || s === 'ok' || s === 'success' || s === 'true') {
-                    return { ok: true, msg: defaultOkMsg };
-                } else if (s) {
-                    // treat any non-empty string as server-provided message
-                    return { ok: false, msg: resp };
-                }
-            } else if (typeof resp === 'object' && resp !== null) {
-                const ok = !!(resp.ok || resp.success || resp.status === 'ok' || resp === true);
-                const msg = resp.message || (ok ? defaultOkMsg : defaultErrMsg);
-                return { ok, msg, data: resp };
-            }
-        } catch (e) {}
-        return { ok: false, msg: defaultErrMsg };
-    }
-
-    function ajaxUpdate(url, payload, onSuccess){
+    // --- AJAX helper: do not use server response text for UI messaging ---
+    function ajaxUpdate(url, payload, successMsg, errorMsg, onSuccess){
         return $.post(url, payload)
-            .done(function(resp){
-                const { ok, msg, data } = parseOkAndMessage(resp);
-                showMessage(msg, ok ? 'success' : 'danger');
-                if (ok && typeof onSuccess === 'function') onSuccess(data || resp);
+            .done(function(){
+                // Always show your custom success text
+                notifySuccess(successMsg);
+                if (typeof onSuccess === 'function') onSuccess();
             })
             .fail(function(xhr){
-                // Try to show a meaningful error
-                let msg = 'Request failed';
-                if (xhr.responseJSON && (xhr.responseJSON.message || xhr.responseJSON.error)) {
-                    msg = xhr.responseJSON.message || xhr.responseJSON.error;
-                } else if (xhr.responseText) {
-                    msg = xhr.responseText;
-                }
-                showMessage(msg, 'danger');
+                // Always show your custom error text (log details to console for dev)
+                console.error('Update failed', xhr);
+                notifyError(errorMsg);
             });
     }
 
@@ -91,27 +68,23 @@ Orders
     const csrf = '{{ csrf_token() }}';
     const orderId = {{ $order->id }};
 
-    // Disable → request → enable pattern with a tiny spinner
-    function withSaving($el, fn){
-        const oldHtml = $el.data('oldHtml') || $el.html();
-        $el.data('oldHtml', oldHtml);
-        $el.prop('disabled', true);
-        $el.addClass('opacity-75');
-        return Promise.resolve(fn()).finally(()=>{
-            $el.prop('disabled', false);
-            $el.removeClass('opacity-75');
-        });
+    // Small UX: disable → request → enable
+    function withSaving($el, promise){
+        $el.prop('disabled', true).addClass('opacity-75');
+        return promise.finally(()=> $el.prop('disabled', false).removeClass('opacity-75'));
     }
 
     // Delivery status change
     $(document).on('change', '#update_delivery_status', function(){
         const $sel = $(this);
         const status = $sel.val();
-        withSaving($sel, () => ajaxUpdate(
+        withSaving($sel, ajaxUpdate(
             routes.delivery,
-            { _token: csrf, order_id: orderId, status: status },
-            function(payload){
-                // Update visible "Order status" text without reload
+            { _token: csrf, order_id: orderId, status },
+            'Delivery status updated',                      // ✅ your custom success text
+            'Could not update delivery status',             // ✅ your custom error text
+            function(){
+                // reflect change in UI
                 const cell = document.getElementById('orderStatusText');
                 if (cell) cell.textContent = toTitleCase(status);
             }
@@ -122,19 +95,20 @@ Orders
     $(document).on('change', '#update_payment_status', function(){
         const $sel = $(this);
         const status = $sel.val();
-        withSaving($sel, () => ajaxUpdate(
+        withSaving($sel, ajaxUpdate(
             routes.payment,
-            { _token: csrf, order_id: orderId, status: status },
-            function(payload){
-                // Optionally also reflect somewhere in UI if you show payment text elsewhere
-                // Example: show a quick success suffix next to the select for a moment
-                showMessage('Payment status set to ' + toTitleCase(status), 'success');
+            { _token: csrf, order_id: orderId, status },
+            'Payment status updated',                       // ✅ your custom success text
+            'Could not update payment status',              // ✅ your custom error text
+            function(){
+                // you can also reflect this somewhere if needed
             }
         ));
     });
 })();
 </script>
 @endpush
+
 
 @section('content')
 <div class="card">
