@@ -183,26 +183,44 @@ Orders
                                     <th class="fw-600">Email:</th>
                                     <td>{{ $order->user->email ?? 'Guest User' }}</td>
                                 </tr>
-                                <tr>
-                                    <th class="fw-600">Shipping address:</th>
-                                    <td>
-                                        @php
-                                            $shipping = is_array($order->shipping) ? $order->shipping : json_decode($order->shipping);
-                                            $billing = is_array($order->billing) ? $order->billing : json_decode($order->billing);
-                                        @endphp
-                                        @foreach ($shipping as $key => $ship)
-                                        <b>{{ ucwords(str_replace('_',' ',$key)) }}</b> : {{ $ship }} <br>
-                                        @endforeach
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th class="fw-600">Billing address:</th>
-                                    <td>
-                                        @foreach ($billing as $key => $ship)
-                                        <b>{{ ucwords(str_replace('_',' ',$key)) }}</b> : {{ $ship }} <br>
-                                        @endforeach
-                                    </td>
-                                </tr>
+                                @php
+                                // Normalize to arrays (handles null, JSON strings, or stdClass)
+                                $shippingRaw = $order->shipping ?? null;
+                                $billingRaw  = $order->billing ?? null;
+
+                                $shipping = is_array($shippingRaw)
+                                    ? $shippingRaw
+                                    : (is_string($shippingRaw) ? json_decode($shippingRaw, true) : (array) $shippingRaw);
+
+                                $billing = is_array($billingRaw)
+                                    ? $billingRaw
+                                    : (is_string($billingRaw) ? json_decode($billingRaw, true) : (array) $billingRaw);
+
+                                $shipping = is_array($shipping) ? $shipping : [];
+                                $billing  = is_array($billing)  ? $billing  : [];
+                            @endphp
+
+                            <tr>
+                                <th class="fw-600">Shipping address:</th>
+                                <td>
+                                    @forelse ($shipping as $key => $val)
+                                        <b>{{ ucwords(str_replace('_',' ', $key)) }}</b> : {{ $val }} <br>
+                                    @empty
+                                        <em>N/A</em>
+                                    @endforelse
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="fw-600">Billing address:</th>
+                                <td>
+                                    @forelse ($billing as $key => $val)
+                                        <b>{{ ucwords(str_replace('_',' ', $key)) }}</b> : {{ $val }} <br>
+                                    @empty
+                                        <em>N/A</em>
+                                    @endforelse
+                                </td>
+                            </tr>
+
                             </tbody>
                         </table>
                     </div>
