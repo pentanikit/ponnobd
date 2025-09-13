@@ -70,6 +70,14 @@
                             </a>
                         </li>
                         @endcan
+                        @can('reviews_view')
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('reviews.show') }}">
+                                <span class="sidenav-mini-icon"> P </span>
+                                <span class="sidenav-normal"> Reviews </span>
+                            </a>
+                        </li>
+                        @endcan
                     </ul>
                 </div>
             </li>
