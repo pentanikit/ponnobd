@@ -358,7 +358,7 @@
 
                             <div class="review-form" id="review-form">
                               <h3 class="form-title">Add Your Review</h3>
-
+              <!-- review form -->
                           <form id="reviewForm"  action="{{ route('reviews.store', $product) }}" method="POST" novalidate>
                             @csrf
 
@@ -385,7 +385,7 @@
                                   <textarea class="form-input" id="review" name="comment" required></textarea>
                               </div>
 
-                              <button type="submit" class="submit-btn" id="submitBtn">
+                              <button type="button" class="submit-btn" id="submitBtn">
                                   <span class="btn-text">Submit Review</span>
                                   <span class="btn-loading" style="display:none;">Submitting…</span>
                               </button>
@@ -484,6 +484,158 @@
                                 @endif
                             });
                           </script>
+
+
+                           <script>
+                              (function () {
+                                const form        = document.getElementById('reviewForm');
+                                const submitBtn   = document.getElementById('submitBtn');
+                                const btnText     = submitBtn?.querySelector('.btn-text');
+                                const btnLoading  = submitBtn?.querySelector('.btn-loading');
+                                const reviewsList = document.getElementById('reviewsList');
+                                const actionUrl   = form?.getAttribute('action') || '';
+                                const csrfToken   =
+                                  form?.querySelector('input[name="_token"]')?.value ||
+                                  document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                                  '';
+
+                                if (!form) return;
+
+                                function setLoading(state) {
+                                  if (!submitBtn) return;
+                                  submitBtn.disabled = !!state;
+                                  if (btnText)    btnText.style.display = state ? 'none' : '';
+                                  if (btnLoading) btnLoading.style.display = state ? '' : 'none';
+                                }
+
+                                // --- helpers ---
+                                function escapeHtml(str = '') {
+                                  return String(str)
+                                    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+                                    .replace(/'/g, '&#39;');
+                                }
+
+                                function formatDateMdY(input) {
+                                  const d = input ? new Date(input) : new Date();
+                                  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                                  return `${months[d.getMonth()]} ${String(d.getDate()).padStart(2,'0')}, ${d.getFullYear()}`;
+                                }
+
+                                function renderStars(ratingNum) {
+                                  const n = Math.max(0, Math.min(5, Number(ratingNum) || 0));
+                                  return '★'.repeat(n) + '☆'.repeat(5 - n);
+                                }
+
+                                // === UPDATED: now also injects a dynamic review item (on success) ===
+                                function insertAlert(message, type = 'success', reviewData = null) {
+                                  if (!reviewsList) return;
+
+                                  // If success and we have review data/snippet, prepend the review item first
+                                  if (type === 'success' && reviewData) {
+                                    // 1) If server sent ready-made HTML snippet
+                                    if (typeof reviewData.html === 'string' && reviewData.html.trim()) {
+                                      const wrap = document.createElement('div');
+                                      wrap.innerHTML = reviewData.html.trim();
+                                      const node = wrap.firstElementChild;
+                                      if (node) reviewsList.prepend(node);
+                                    } else {
+                                      // 2) Build from JSON / form data
+                                      const name    = reviewData.guest ?? 'Anonymous';
+                                      const date    = reviewData.created_at ?? new Date().toISOString();
+                                      const rating  = reviewData.rating ?? 0;
+                                      const comment = reviewData.comment ?? '';
+                                      const isExtra = !!reviewData.is_extra; // if you want to mark as hidden for "load more" logic
+
+                                      const item = document.createElement('div');
+                                      // Avoid DOMTokenList token errors: add classes properly
+                                      item.classList.add('review-item');
+                                      if (isExtra) {
+                                        item.classList.add('review-extra');
+                                        
+                                      }
+
+                                      // Mirror your Blade template structure & semantics
+                                      item.innerHTML = `
+                                        <div class="review-header">
+                                          <span class="reviewer-name">${escapeHtml(name)}</span>
+                                          <span class="review-date">${formatDateMdY(date)}</span>
+                                        </div>
+                                        <div class="review-rating" aria-label="${Number(rating) || 0} out of 5">
+                                          ${renderStars(rating)}
+                                        </div>
+                                        <p class="review-content">${escapeHtml(comment)}</p>
+                                      `.trim();
+
+                                      reviewsList.prepend(item);
+                                    }
+                                  }
+
+                                  // Now show the alert at the very top
+                                  const alert = document.createElement('div');
+                                  alert.className = `alert alert-${type} my-2`;
+                                  alert.setAttribute('role', 'alert');
+                                  alert.textContent = message;
+                                  reviewsList.prepend(alert);
+                                  setTimeout(() => alert.remove(), 5000);
+                                }
+
+                                submitBtn.addEventListener('click', async function (e) {
+                                  e.preventDefault();
+                                  setLoading(true);
+
+                                  const formData = new FormData(form);
+
+                                  try {
+                                    const res = await fetch(actionUrl, {
+                                      method: 'POST',
+                                      headers: {
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'X-CSRF-TOKEN': csrfToken,
+                                        'Accept': 'application/json'
+                                      },
+                                      body: formData
+                                    });
+
+                                    const raw = await res.text();
+                                    let data = null; try { data = JSON.parse(raw); } catch (_){}
+
+                                    if (!res.ok) {
+                                      if (res.status === 422 && data?.errors) {
+                                        insertAlert('There were some errors. Please correct and submit again.', 'danger');
+                                      } else {
+                                        insertAlert(data?.message || 'Something went wrong. Please try again.', 'danger');
+                                      }
+                                    } else {
+                                      // Build a flexible review payload:
+                                      const reviewPayload =
+                                        data?.review
+                                          ? data.review
+                                          : {
+                                              // Fallback to form values if server didn't return a review object
+                                              name: formData.get('guest_name') || formData.get('name') || (data?.name) || 'Anonymous',
+                                              created_at: data?.created_at || new Date().toISOString(),
+                                              rating: Number(formData.get('rating') || data?.rating || 0),
+                                              comment: formData.get('comment') || data?.comment || '',
+                                              is_extra: false
+                                            };
+
+                                      insertAlert(data?.message || '✅ Thank you! Your review has been submitted.', 'success', {
+                                        html: data?.html, // preferred if your API sends rendered HTML
+                                        ...reviewPayload
+                                      });
+
+                                      form.reset();
+                                      form.querySelectorAll('input[name="rating"]').forEach(r => (r.checked = false));
+                                    }
+                                  } catch (_) {
+                                    insertAlert('Network error. Please try again.', 'danger');
+                                  } finally {
+                                    setLoading(false);
+                                  }
+                                });
+                              })();
+                            </script>
 
 
                       

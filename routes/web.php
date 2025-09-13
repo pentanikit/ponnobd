@@ -72,8 +72,7 @@ Auth::routes();
 Route::get('/{slug}', ProductOrCategory::class)->name('product.details');
 
 
-Route::post('/{product}/reviews', [ProductController::class, 'postReview'])
-    ->name('reviews.store');
+Route::post('/{product}/reviews', [ProductController::class, 'postReview'])->name('reviews.store');
 
 Route::get("nullable",function(){
 
