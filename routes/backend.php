@@ -111,7 +111,7 @@ Route::prefix('customers')->name('customers.')->middleware('can:customers_view')
 Route::prefix('reviews')->name('reviews.')->group(function(){
     Route::get('/', [App\Http\Controllers\Backend\ReviewController::class, 'index']);
     Route::delete('/delete/{review}', [App\Http\Controllers\Backend\ReviewController::class, 'destroy'])->name('destroy');
-    Route::delete('/bulk-destroy', [ReviewController::class, 'bulkDestroy'])->name('bulk-destroy');
+    Route::delete('/bulk-destroy', [App\Http\Controllers\Backend\ReviewController::class, 'bulkDestroy'])->name('bulk-destroy');
 });
 
 // Staff
