@@ -5,27 +5,137 @@ Orders
 @endsection
 @push('js')
 <script>
-        $('#update_delivery_status').on('change', function(){
-            var order_id = {{ $order->id }};
-            var status = $('#update_delivery_status').val();
-            $.post('{{ route('order.update.status') }}', {
-                _token:'{{ @csrf_token() }}',
-                order_id:order_id,
-                status:status
-            }, function(data){
-                window.location.reload();
-            });
-        });
+(function(){
+    // Helpers
+    function toTitleCase(str){
+        return (str || '').replace(/_/g,' ').replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.slice(1));
+    }
 
-        $('#update_payment_status').on('change', function(){
-            var order_id = {{ $order->id }};
-            var status = $('#update_payment_status').val();
-            $.post('{{ route('order.update.payment.status') }}', {_token:'{{ @csrf_token() }}',order_id:order_id,status:status}, function(data){
-                window.location.reload();
+    function showMessage(message, type){ // type: success | danger | warning | info
+        const container = document.getElementById('toastContainer');
+        const isBootstrap = window.bootstrap && bootstrap.Toast;
+
+        if (isBootstrap) {
+            // Build a Bootstrap 5 toast
+            const toastEl = document.createElement('div');
+            toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+            toastEl.setAttribute('role','alert');
+            toastEl.setAttribute('aria-live','assertive');
+            toastEl.setAttribute('aria-atomic','true');
+            toastEl.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>`;
+            container.appendChild(toastEl);
+            const t = new bootstrap.Toast(toastEl, { delay: 2000 });
+            t.show();
+            // auto-remove after hidden
+            toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+        } else {
+            // Fallback: Bootstrap-style alert
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show shadow`;
+            alert.innerHTML = `
+                <strong>${type === 'success' ? 'Success' : 'Notice'}:</strong> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
+            container.appendChild(alert);
+            setTimeout(()=> alert.remove(), 2500);
+        }
+    }
+
+    function parseOkAndMessage(resp, defaultOkMsg='Updated successfully', defaultErrMsg='Update failed'){
+        // Accept JSON or plain text responses (e.g., "1", "ok", "success", or custom)
+        try {
+            if (typeof resp === 'string') {
+                const s = resp.trim().toLowerCase();
+                if (s === '1' || s === 'ok' || s === 'success' || s === 'true') {
+                    return { ok: true, msg: defaultOkMsg };
+                } else if (s) {
+                    // treat any non-empty string as server-provided message
+                    return { ok: false, msg: resp };
+                }
+            } else if (typeof resp === 'object' && resp !== null) {
+                const ok = !!(resp.ok || resp.success || resp.status === 'ok' || resp === true);
+                const msg = resp.message || (ok ? defaultOkMsg : defaultErrMsg);
+                return { ok, msg, data: resp };
+            }
+        } catch (e) {}
+        return { ok: false, msg: defaultErrMsg };
+    }
+
+    function ajaxUpdate(url, payload, onSuccess){
+        return $.post(url, payload)
+            .done(function(resp){
+                const { ok, msg, data } = parseOkAndMessage(resp);
+                showMessage(msg, ok ? 'success' : 'danger');
+                if (ok && typeof onSuccess === 'function') onSuccess(data || resp);
+            })
+            .fail(function(xhr){
+                // Try to show a meaningful error
+                let msg = 'Request failed';
+                if (xhr.responseJSON && (xhr.responseJSON.message || xhr.responseJSON.error)) {
+                    msg = xhr.responseJSON.message || xhr.responseJSON.error;
+                } else if (xhr.responseText) {
+                    msg = xhr.responseText;
+                }
+                showMessage(msg, 'danger');
             });
+    }
+
+    // Routes & CSRF
+    const routes = {
+        delivery: '{{ route('order.update.status') }}',
+        payment : '{{ route('order.update.payment.status') }}'
+    };
+    const csrf = '{{ csrf_token() }}';
+    const orderId = {{ $order->id }};
+
+    // Disable → request → enable pattern with a tiny spinner
+    function withSaving($el, fn){
+        const oldHtml = $el.data('oldHtml') || $el.html();
+        $el.data('oldHtml', oldHtml);
+        $el.prop('disabled', true);
+        $el.addClass('opacity-75');
+        return Promise.resolve(fn()).finally(()=>{
+            $el.prop('disabled', false);
+            $el.removeClass('opacity-75');
         });
+    }
+
+    // Delivery status change
+    $(document).on('change', '#update_delivery_status', function(){
+        const $sel = $(this);
+        const status = $sel.val();
+        withSaving($sel, () => ajaxUpdate(
+            routes.delivery,
+            { _token: csrf, order_id: orderId, status: status },
+            function(payload){
+                // Update visible "Order status" text without reload
+                const cell = document.getElementById('orderStatusText');
+                if (cell) cell.textContent = toTitleCase(status);
+            }
+        ));
+    });
+
+    // Payment status change
+    $(document).on('change', '#update_payment_status', function(){
+        const $sel = $(this);
+        const status = $sel.val();
+        withSaving($sel, () => ajaxUpdate(
+            routes.payment,
+            { _token: csrf, order_id: orderId, status: status },
+            function(payload){
+                // Optionally also reflect somewhere in UI if you show payment text elsewhere
+                // Example: show a quick success suffix next to the select for a moment
+                showMessage('Payment status set to ' + toTitleCase(status), 'success');
+            }
+        ));
+    });
+})();
 </script>
 @endpush
+
 @section('content')
 <div class="card">
     <div class="vstack gap-4">
@@ -105,7 +215,8 @@ Orders
                                 </tr>
                                 <tr>
                                     <th class="fw-600">Order status:</th>
-                                    <td>{{ ucwords(str_replace('_',' ',$order->status)) }}</td>
+                                    <td id="orderStatusText">{{ ucwords(str_replace('_',' ',$order->status)) }}</td>
+
                                 </tr>
                                 <tr>
                                     <th class="fw-600">Total order amount:</th>
@@ -223,4 +334,7 @@ Orders
         </div>
     </div>
 </div>
+{{-- Toast/alert container --}}
+<div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index:1100;"></div>
+
 @endsection
