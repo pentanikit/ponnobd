@@ -362,12 +362,12 @@
                           <form id="reviewForm"  action="{{ route('reviews.store', $product) }}" method="POST" novalidate>
                             @csrf
 
-                              @guest
+                             
                               <div class="form-group">
                                   <label class="form-label" for="name">Your Name</label>
                                   <input type="text" class="form-input" id="name" name="guest_name" required>
                               </div>
-                              @endguest
+                              
 
                               <div class="form-group">
                                   <label class="form-label">Your Rating</label>
