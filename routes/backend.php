@@ -108,6 +108,11 @@ Route::prefix('customers')->name('customers.')->middleware('can:customers_view')
     Route::get('destroy/{id}', [App\Http\Controllers\Backend\CustomerController::class, 'destroy'])->middleware('can:customers_delete')->name('destroy');
 });
 
+Route::prefix('reviews')->name('reviews.')->group(function(){
+    Route::get('/', [App\Http\Controllers\Backend\ReviewController::class, 'index']);
+    Route::delete('/delete/{review}', [App\Http\Controllers\Backend\ReviewController::class, 'destroy'])->name('destroy');
+});
+
 // Staff
 Route::prefix('staff')->name('staff.')->middleware('role:admin')->group(function () {
     Route::get('/', [App\Http\Controllers\Backend\StaffController::class, 'index'])->name('index');
