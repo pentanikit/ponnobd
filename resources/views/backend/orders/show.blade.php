@@ -103,14 +103,16 @@ $(document).on('change', '#update_delivery_status', function(){
     const jq = $.post(
         '{{ route('order.update.status') }}',
         { _token: '{{ csrf_token() }}', order_id: {{ $order->id }}, status }
+            'Delivery status updated',                      // ✅ your custom success text
+            'Could not update delivery status', 
     )
     .done(function(res){
         // toast (your existing notifySuccess is fine too)
-        if (window.toastr) { toastr.clear(); toastr.success('Delivery status updated'); }
+       // if (window.toastr) { toastr.clear(); toastr.success('Delivery status updated'); }
 
         // reflect text on the page
         const cell = document.getElementById('orderStatusText');
-        if (cell) cell.textContent = (status || '').replace(/_/g,' ').replace(/\w\S*/g, t => t[0].toUpperCase()+t.slice(1));
+        if (cell) cell.textContent = toTitleCase(status);
 
         // ⭐ update the sidebar badge using the server's fresh count
         if (res && typeof res.pending_count !== 'undefined') {

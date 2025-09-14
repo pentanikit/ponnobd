@@ -43,8 +43,8 @@ class OrderController extends Controller
         // $order->status = $request->status;
         // $order->save();
 
-        session()->flash('success', 'Payment status has been updated!');
-        session()->flash('success', 'Delivery status has been updated!');
+        // session()->flash('success', 'Payment status has been updated!');
+        // session()->flash('success', 'Delivery status has been updated!');
 
         // Example in your controller methods:
         return response()->json([
