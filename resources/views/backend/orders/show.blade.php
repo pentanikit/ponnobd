@@ -46,19 +46,19 @@ Orders
     }
 
     // --- AJAX helper: do not use server response text for UI messaging ---
-// Put this once in a common JS file or above your handlers
-function ajaxUpdate(url, payload, successMsg, errorMsg, onSuccess){
-  return $.post(url, payload)
-    .done(function(res){
-      if (window.toastr) { toastr.clear(); toastr.success(successMsg); }
-      if (typeof onSuccess === 'function') onSuccess(res);
-    })
-    .fail(function(xhr){
-      console.error('Update failed', xhr);
-      if (window.toastr) { toastr.clear(); toastr.error(errorMsg); }
-    });
-}
-
+    function ajaxUpdate(url, payload, successMsg, errorMsg, onSuccess){
+        return $.post(url, payload)
+            .done(function(){
+                // Always show your custom success text
+                notifySuccess(successMsg);
+                if (typeof onSuccess === 'function') onSuccess();
+            })
+            .fail(function(xhr){
+                // Always show your custom error text (log details to console for dev)
+                console.error('Update failed', xhr);
+                notifyError(errorMsg);
+            });
+    }
 
     // Routes & CSRF
     const routes = {
@@ -67,7 +67,6 @@ function ajaxUpdate(url, payload, successMsg, errorMsg, onSuccess){
     };
     const csrf = '{{ csrf_token() }}';
     const orderId = {{ $order->id }};
-    let currentOrderStatus = @json($order->status);
 
     // Small UX: disable → request → enable
 // REPLACE your current withSaving with this:
@@ -80,20 +79,19 @@ function withSaving($el, jqXHR){
 
 
 function setPendingOrdersBadge(count){
-  const badge = document.getElementById('pendingOrdersBadge');
-  if (!badge) return;
-  const n = Math.max(0, parseInt(count || 0, 10));
-  if (n > 0) {
-    badge.textContent = n;
-    badge.dataset.count = String(n);
-    badge.style.display = 'inline-block';
-  } else {
-    badge.textContent = '';
-    badge.dataset.count = '0';
-    badge.style.display = 'none';
-  }
+    const badge = document.getElementById('pendingOrdersBadge');
+    if (!badge) return; // sidebar may not be visible for some roles/pages
+    const n = Math.max(0, parseInt(count || 0, 10));
+    if (n > 0) {
+        badge.textContent = n;
+        badge.dataset.count = String(n);
+        badge.style.display = 'inline-block';
+    } else {
+        badge.textContent = '';
+        badge.dataset.count = '0';
+        badge.style.display = 'none';
+    }
 }
-
 
 // function notifySuccess(msg){
 //   if (window.toastr) { toastr.remove(); toastr.clear(); toastr.success(msg); }
@@ -106,53 +104,35 @@ function setPendingOrdersBadge(count){
 
 
 // Delivery status change
-// Prevent double-binding then bind
+// Delivery status change (unify with payment flow)
 $(document)
-  .off('change', '#update_delivery_status')
-  .on('change', '#update_delivery_status', function(e){
+        // prevent double-binding
+  .on('change', '#update_delivery_status', function (e) {
     e.preventDefault();
     e.stopImmediatePropagation();
 
     const $sel   = $(this);
     const status = $sel.val();
 
-    // visual disable while saving
-    $sel.prop('disabled', true).addClass('opacity-75');
-
     withSaving($sel, ajaxUpdate(
       routes.delivery,
       { _token: csrf, order_id: orderId, status },
-      'Delivery status updated',            // ✅ toastr shows here
+      'Delivery status updated',              // ✅ toast shown inside ajaxUpdate -> notifySuccess
       'Could not update delivery status',
-      function(res){
-        // reflect text in the page
+      function (res) {
+        // reflect text on the page
         const cell = document.getElementById('orderStatusText');
         if (cell) cell.textContent = (status || '')
-          .replace(/_/g,' ')
-          .replace(/\w\S*/g, t => t[0].toUpperCase()+t.slice(1));
+          .replace(/_/g, ' ')
+          .replace(/\w\S*/g, t => t[0].toUpperCase() + t.slice(1));
 
-        // ⭐ preferred: use server's fresh count
+        // update sidebar badge from server
         if (res && typeof res.pending_count !== 'undefined') {
           setPendingOrdersBadge(res.pending_count);
-        } else {
-          // fallback delta if server didn't send count
-          if (currentOrderStatus === 'pending' && status !== 'pending') {
-            const badge = document.getElementById('pendingOrdersBadge');
-            const cur = parseInt(badge?.dataset.count || badge?.textContent || '0', 10) || 0;
-            setPendingOrdersBadge(Math.max(0, cur - 1));
-          } else if (currentOrderStatus !== 'pending' && status === 'pending') {
-            const badge = document.getElementById('pendingOrdersBadge');
-            const cur = parseInt(badge?.dataset.count || badge?.textContent || '0', 10) || 0;
-            setPendingOrdersBadge(cur + 1);
-          }
         }
-
-        // update local state for next change
-        currentOrderStatus = status;
       }
     ));
 });
-
 
 
 
