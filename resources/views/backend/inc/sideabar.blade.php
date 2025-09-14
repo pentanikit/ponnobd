@@ -84,20 +84,25 @@
 
             @can('orders_view')
             @php
-                $pending_orders = App\Models\Order::where('status', 'pending')->count();
+                $pending_orders = \App\Models\Order::where('status', 'pending')->count();
             @endphp
             <li class="nav-item">
-                <a href="{{ route('order.index') }}" @class(['nav-link ', 'active' => Route::is('order.index')])>
+                <a href="{{ route('order.index') }}" @class(['nav-link', 'active' => Route::is('order.index')])>
                     <div class="icon icon-shape icon-sm d-flex align-items-center justify-content-center text-center">
                         <i class="ni ni-cart text-info text-sm opacity-10"></i>
                     </div>
-                    <span class="nav-link-text ms-1">Orders </span>
-                    @if ($pending_orders > 0)
-                        <span class="badge bg-danger ml-auto text-white">{{ $pending_orders }}</span>
-                    @endif
+                    <span class="nav-link-text ms-1">Orders</span>
+
+                    <span
+                        id="pendingOrdersBadge"
+                        class="badge bg-danger ml-auto text-white"
+                        data-count="{{ $pending_orders }}"
+                        @if(!$pending_orders) style="display:none" @endif
+                    >{{ $pending_orders }}</span>
                 </a>
             </li>
             @endcan
+
 
 
             <li class="nav-item">

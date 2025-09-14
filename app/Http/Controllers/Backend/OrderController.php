@@ -38,7 +38,7 @@ class OrderController extends Controller
 
         // foreach ($order->detail as $key => $orderDetail) {
 
-          
+        $pendingCount = Order::where('status', 'pending')->count();
         // }
         // $order->status = $request->status;
         // $order->save();
@@ -50,6 +50,7 @@ class OrderController extends Controller
         return response()->json([
             'ok' => true,
             'message' => 'status updated to ' . ucwords(str_replace('_',' ', $request->status)),
+            'pending_count' => $pendingCount,
         ]);
 
     }

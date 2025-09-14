@@ -78,22 +78,55 @@ function withSaving($el, jqXHR){
 }
 
 
-    // Delivery status change
-    $(document).on('change', '#update_delivery_status', function(){
-        const $sel = $(this);
-        const status = $sel.val();
-        withSaving($sel, ajaxUpdate(
-            routes.delivery,
-            { _token: csrf, order_id: orderId, status },
-            'Delivery status updated',                      // ✅ your custom success text
-            'Could not update delivery status',             // ✅ your custom error text
-            function(){
-                // reflect change in UI
-                const cell = document.getElementById('orderStatusText');
-                if (cell) cell.textContent = toTitleCase(status);
-            }
-        ));
+function setPendingOrdersBadge(count){
+    const badge = document.getElementById('pendingOrdersBadge');
+    if (!badge) return; // sidebar may not be visible for some roles/pages
+    const n = Math.max(0, parseInt(count || 0, 10));
+    if (n > 0) {
+        badge.textContent = n;
+        badge.dataset.count = String(n);
+        badge.style.display = 'inline-block';
+    } else {
+        badge.textContent = '';
+        badge.dataset.count = '0';
+        badge.style.display = 'none';
+    }
+}
+
+
+
+// Delivery status change
+$(document).on('change', '#update_delivery_status', function(){
+    const $sel   = $(this);
+    const status = $sel.val();
+
+    const jq = $.post(
+        '{{ route('order.update.status') }}',
+        { _token: '{{ csrf_token() }}', order_id: {{ $order->id }}, status }
+    )
+    .done(function(res){
+        // toast (your existing notifySuccess is fine too)
+        if (window.toastr) { toastr.clear(); toastr.success('Delivery status updated'); }
+
+        // reflect text on the page
+        const cell = document.getElementById('orderStatusText');
+        if (cell) cell.textContent = (status || '').replace(/_/g,' ').replace(/\w\S*/g, t => t[0].toUpperCase()+t.slice(1));
+
+        // ⭐ update the sidebar badge using the server's fresh count
+        if (res && typeof res.pending_count !== 'undefined') {
+            setPendingOrdersBadge(res.pending_count);
+        }
+    })
+    .fail(function(xhr){
+        console.error(xhr);
+        if (window.toastr) { toastr.clear(); toastr.error('Could not update delivery status'); }
     });
+
+    // small UX: disable while saving
+    $sel.prop('disabled', true).addClass('opacity-75');
+    jq.always(function(){ $sel.prop('disabled', false).removeClass('opacity-75'); });
+});
+
 
     // Payment status change
     $(document).on('change', '#update_payment_status', function(){
