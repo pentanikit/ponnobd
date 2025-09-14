@@ -102,7 +102,7 @@ $(document).on('change', '#update_delivery_status', function(){
 
     const jq = $.post(
         '{{ route('order.update.status') }}',
-        { _token: '{{ csrf_token() }}', order_id: {{ $order->id }}, status }
+        { _token: '{{ csrf_token() }}', order_id: {{ $order->id }}, status },
             'Delivery status updated',                      // ✅ your custom success text
             'Could not update delivery status', 
     )
