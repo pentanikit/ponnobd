@@ -48,10 +48,10 @@ Orders
     // --- AJAX helper: do not use server response text for UI messaging ---
     function ajaxUpdate(url, payload, successMsg, errorMsg, onSuccess){
         return $.post(url, payload)
-            .done(function(){
+            .done(function(res){
                 // Always show your custom success text
                 notifySuccess(successMsg);
-                if (typeof onSuccess === 'function') onSuccess();
+                if (typeof onSuccess === 'function') onSuccess(res);
             })
             .fail(function(xhr){
                 // Always show your custom error text (log details to console for dev)
