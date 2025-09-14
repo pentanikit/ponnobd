@@ -106,7 +106,7 @@ function setPendingOrdersBadge(count){
 // Delivery status change
 // Delivery status change (unify with payment flow)
 $(document)
-  .off('change', '#update_delivery_status')           // prevent double-binding
+        // prevent double-binding
   .on('change', '#update_delivery_status', function (e) {
     e.preventDefault();
     e.stopImmediatePropagation();
